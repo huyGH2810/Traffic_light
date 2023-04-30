@@ -1,0 +1,211 @@
+DATA SEGMENT
+    PORTA EQU 00H           ;Set label PORTA to the port address of port A 
+    PORTB EQU 02H           ;Set label PORTB to the port address of port B
+    PORTC EQU 04H           ;Set label PORTC to the port address of port C
+    PORT_CON EQU 06H	    ;Set label PORT_CON to the port address of control register
+DATA ENDS
+
+
+CODE SEGMENT
+    MOV AX, DATA            ;temporarily moving Data Segment contents to a General-Purpose Register (AX)
+    MOV DS, AX              ;finally moving that to Data Segment Register (DS)
+
+    
+ORG 0000H
+    MOV DX, PORT_CON        ;moving Control Port address to DX
+    MOV AL, 10000000B       ;setting all ports of 8255A as OUTPUT ports
+    OUT DX, AL   
+
+    START:    
+    
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
+;;;;;;;;;;RED LIGHT;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
+
+;3X    
+    MOV SI, 0
+    MOV DI, 0
+    CALL RED
+    MOV CX, 1FFFH           
+    R3:   MOV DX, PORTB          
+            MOV AL, 10110000B   
+            OUT DX, AL          
+            LOOP R3 
+    CALL COUNT
+    
+;2X
+    MOV SI, 0
+    MOV DI, 0
+    CALL RED 
+    MOV CX, 1FFFH           
+    R2:   MOV DX, PORTB          
+            MOV AL, 10100100B   
+            OUT DX, AL          
+            LOOP R2
+    CALL COUNT
+    
+;1X 
+    MOV SI, 0
+    MOV DI, 0
+    CALL RED  
+    MOV CX, 1FFFH           
+    R1:   MOV DX, PORTB          
+            MOV AL, 11111001B 
+            OUT DX, AL          
+            LOOP R1
+    CALL COUNT
+    
+;0X 
+    MOV SI, 0
+    MOV DI, 0
+    CALL RED 
+    MOV CX, 1FFFH           
+    R0:   MOV DX, PORTB          
+            MOV AL, 11000000B     
+            OUT DX, AL          
+            LOOP R0 
+    CALL COUNT
+
+;;;;;;;;;;;;;;;;;;;;;;;;; 
+;;;;;;YELLOW LIGHT;;;;;;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;
+    MOV SI, 0
+    MOV DI, 0
+    CALL YELLOW
+    CALL COUNT2
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;GREEN LIGHT;;;;;;;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;3X    
+    MOV SI, 0
+    MOV DI, 0
+    CALL GREEN
+    MOV CX, 1FFFH           
+    G3:   MOV DX, PORTB          
+            MOV AL, 10110000B   
+            OUT DX, AL          
+            LOOP G3 
+    CALL COUNT
+    
+;2X
+    MOV SI, 0
+    MOV DI, 0
+    CALL GREEN 
+    MOV CX, 1FFFH           
+    G2:   MOV DX, PORTB          
+            MOV AL, 10100100B   
+            OUT DX, AL          
+            LOOP G2
+    CALL COUNT
+    
+;1X 
+    MOV SI, 0
+    MOV DI, 0
+    CALL GREEN  
+     MOV CX, 1FFFH           
+    G1:   MOV DX, PORTB          
+            MOV AL, 11111001B 
+            OUT DX, AL          
+            LOOP G1
+    CALL COUNT
+    
+;0X 
+    MOV SI, 0
+    MOV DI, 0
+    CALL GREEN 
+    MOV CX, 1FFFH           
+    G0:   MOV DX, PORTB          
+            MOV AL, 11000000B     
+            OUT DX, AL          
+            LOOP G0 
+    CALL COUNT
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;YELLOW LIGHT;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;   
+    MOV SI, 0
+    MOV DI, 0    
+    CALL YELLOW
+    CALL COUNT2
+
+    JMP START
+    
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
+;;;;;;;;;;FUNCTION;;;;;;;;;;;    
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+COUNT:
+L0: MOV CX, 1FFFH
+L1: MOV AL, S4[SI]
+    MOV DX, PORTA
+    OUT DX, AL
+    LOOP L1
+    
+    INC SI
+    CMP SI, 10
+    JL L0
+ RET   
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+COUNT2:
+LL0: MOV CX, 1FFFH
+LL1: MOV AL, S5[SI]
+    MOV DX, PORTA
+    OUT DX, AL
+    LOOP LL1
+    
+    INC SI
+    CMP SI, 6
+    JL LL0
+ RET    
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
+RED:
+RE0:MOV CX, 1FFFH
+RE1:MOV AL, S1[DI]
+    MOV DX, PORTC
+    OUT DX, AL
+    LOOP RE1
+RET  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
+YELLOW:
+Y0:MOV CX, 1FFFH
+Y1:MOV AL, S2[DI]
+    MOV DX, PORTC
+    OUT DX, AL
+    LOOP Y1
+RET
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+GREEN:
+GR0:MOV CX, 1FFFH
+GR1:MOV AL, S3[DI]
+    MOV DX, PORTC
+    OUT DX, AL
+    LOOP GR1
+
+RET
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;     
+ORG 1000H
+S1 DB 001100001B
+S2 DB 00010010B
+S3 DB 00001100B 
+
+S4 DB 10010000B
+     DB 10000000B
+     DB 11011000B
+     DB 10000010B
+     DB 10010010B
+     DB 10011001B
+     DB 10110000B  
+     DB 10100100B  
+     DB 11111001B   
+     DB 11000000B  
+
+S5 DB 10010010B
+     DB 10011001B
+     DB 10110000B  
+     DB 10100100B  
+     DB 11111001B   
+     DB 11000000B  
+ 
+CODE ENDS
+END
